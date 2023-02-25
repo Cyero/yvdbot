@@ -1,0 +1,12 @@
+__pycache__/
+.idea/
+handlers/__pycache__/
+keyboards/__pycache__/
+modules/__pycache__/
+venv/
+users/*
+!/users/.usersdir
+src/*
+!/src/.srcdir
+.env
+
