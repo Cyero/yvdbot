@@ -8,15 +8,13 @@ To run this project, you will need to add the following environment variables to
 
 `TOKEN`- Telegram BOT Token
 
-`URL` - Hosting\ngrok URL 
+`SITEURL` - Hosting\ngrok URL 
 
-`WHPATH` - Optional Webhook path (defaults '' if not provided)
+`APPHOST` - IP for listening (defaults to '127.0.0.1' if not provided)
 
-`HOST` - IP for listening (defaults to '0.0.0.0' if not provided) For local use - "localhost"
+`APPPORT` - Port for listening. For deploy it`s taken auto from host provider (defaults to 5000 if not provided)
 
-`PORT` - Port for listening. For deploy it`s taken auto from host provider (defaults to 3001 if not provided)
-
-`PWD_ADMIN`- Password for the administrator menu. You need to generate your own. To launch the admin panel, 
+`PWDADMIN`- Password for the administrator menu. You need to generate your own. To launch the admin panel, 
 send a message ".admin YOUR_PASS" to the bot, and after a warning that something went wrong, enter your password. 
 In the admin panel, you can: view the number of active users, warn users about a scheduled restart of the bot,
 clear the directory with user files, clear the database 
@@ -58,19 +56,19 @@ Install environment variables
 ```bash
 #UNIX
   export TOKEN='YOUR_TOKEN_HERE'
-  export HOST='localhost'
-  export PWD_ADMIN='YOUR_PASSWORD'
+  export APPHOST='localhost'
+  export PWDADMIN='YOUR_PASSWORD'
   
 #PowerShell
   $env:TOKEN='YOUR_TOKEN_HERE'
-  $env:HOST='localhost'
-  $env:PWD_ADMIN='YOUR_PASSWORD'
+  $env:APPHOST='localhost'
+  $env:PWDADMIN='YOUR_PASSWORD'
 ```
 
 Start the ngrok server at new terminal
 
 ```bash
-  ngrok http 3001
+  ngrok http 5000
 ```
 
 Run a bot
@@ -84,6 +82,83 @@ Run a bot
   python3.exe ./start.py
 ```
 Attention! When specifying the "URL" variable, remove the " \ " at the end of the address
+
+
+## Deployment
+Clone the project
+```bash
+git clone https://github.com/Cyero/yvdbot.git
+```
+Go to the project directory
+```bash
+cd yvdbot
+```
+Create a virtual environment
+```bash
+python3 -m venv env
+```
+Activate virtual environment
+```bash
+source env/bin/Activate
+```
+Install dependencies
+```bash
+poetry install
+```
+Deactivate virtual environment
+```bash
+deactivate
+```
+Add rule in firewall
+```bash
+sudo ufw allow 443
+```
+Add route to your nging configuration
+```bash
+location /$TOKEN {
+      proxy_set_header Host $http_host;
+      proxy_redirect off;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Scheme $scheme;
+      proxy_pass http://127.0.0.1:5000/$TOKEN;
+  }
+```
+Make script for runnig bot as service
+```bash
+sudo nano /etc/systemd/system/yvdbot.service
+```
+Paste next code to file. If you're using PostgreSQL - add 'Environment="KEY=VALUE"' for every variable
+```bash
+[Unit]
+Description=YVDBot
+After=multi-user.target
+
+[Service]
+User=USERNAME
+Environment="SITEURL=YOUR_SITE_URL"
+Environment="TOKEN=YOUR_BOT_TOKEN"
+Environment="PWDADMIN=YOUR_ADMIN_PASS"
+Type=simple
+Restart=always
+WorkingDirectory=/home/USERNAME/yvdbot
+ExecStart=/bin/bash -c 'cd /home/USERNAME/yvdbot/ && source env/bin/activate && python start.py'
+
+[Install]
+WantedBy=multi-user.target
+```
+Reload systemctl
+```bash
+sudo systemctl daemon-reload
+```
+Enable autorun
+```bash
+sudo systemctl enable yvdbot.service
+```
+Start service
+```bash
+sudo systemctl start yvdbot.service
+``````
 
 ## Appendix
 The bot can work both on the local and on the public [Telegram BOT API](https://github.com/tdlib/telegram-bot-api) server.

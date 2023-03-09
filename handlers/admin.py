@@ -32,8 +32,8 @@ async def wipe_db(call: types.CallbackQuery) -> None:
 
 
 def admin_handlers_register(dp: Dispatcher) -> None:
-    admin_pass = os.getenv('PWD_ADMIN')
-    dp.register_message_handler(admin_panel, lambda message: message.text and ".admin" and admin_pass in message.text)
+    admin_pass = os.getenv('PWDADMIN')
+    dp.register_message_handler(admin_panel, lambda message: message.text and admin_pass and ".admin" in message.text)
     dp.register_callback_query_handler(clean_dir, text='clean')
     dp.register_callback_query_handler(send_all, text='sendall')
     dp.register_callback_query_handler(users_online, text='users')
