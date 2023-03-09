@@ -6,7 +6,7 @@ from handlers import client, admin
 
 
 async def on_startup(dp) -> None:
-    await bot.set_webhook({os.getenv('RAILWAY_STATIC_URL')})
+    await bot.set_webhook(f"{os.getenv('RAILWAY_STATIC_URL')}")
     admin.admin_handlers_register(dp)
     client.client_handlers_register(dp)
     db.check_table_existing()
